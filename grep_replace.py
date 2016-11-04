@@ -14,7 +14,7 @@ class GrepReplace:
         parent_parser = argparse.ArgumentParser(add_help=False)
         parent_parser.add_argument("-v", "--version", action="version", version="Grep to Replace 1.0")
         parent_parser.add_argument("-b", "--backup", action="store_true", help="バックアップを作る")
-        parent_parser.add_argument("-r", "--regexp", action="store_true", help="置換に正規表現を使う")
+        parent_parser.add_argument("-r", "--regexp", action="store_true", help="検索 / 置換に正規表現を使う")
         p2 = parent_parser.add_argument_group("target details")
         p2.add_argument("-ed", "--enable-directories", nargs="+", help="有効ディレクトリ[1個以上]")
         p2.add_argument("-ef", "--enable-files", nargs="+", help="有効ファイル[1個以上]")
@@ -37,7 +37,7 @@ epilog =
 影響チェックしたいときや、バージョン管理システムを導入できない環境のために、
 このオプションは残してあります。
 
-検索/置換に正規表現を使いたいときは、-r(--regexp)を追加してください。
+検索 / 置換に正規表現を使いたいときは、-r(--regexp)を追加してください。
 
 有効キーワードは、指定した(ディレクトリ | ファイル | 拡張子)のみ処理します。
 無効リストは、除外する(ディレクトリ | ファイル | 拡張子)の一覧です。
@@ -104,6 +104,50 @@ description =
         s3.add_argument("target", help="対象ディレクトリ")
         s3.add_argument("find", help="検索ファイル名")
         s3.add_argument("replace", help="置換ファイル名")
+
+
+        s4 = subparsers.add_parser("deleteline", aliases=["del", "dl"], help="行削除",
+            parents = [parent_parser],
+            formatter_class = argparse.RawDescriptionHelpFormatter,
+description =
+"""
+検索文字列を見つけたら、削除開始行から、削除行数までを削る。
+削除開始行, 削除行数は、検索文字列からの相対位置で指定する。(含マイナス)
+""",
+epilog =
+"""
+【例】
+-3 AAA
+-2 BBB
+-1 CCC
+ 0 検索文字列
+ 1 DDD
+ 2 EEE
+ 3 FFF
+ ・ 0,  0: 何もしない。
+ ・ 0, -3: 何もしない。(削除行数 < 0のため)
+ ・-3,  3: 検索文字列の上3行を削る。(AAA - CCCまで)
+ ・-2,  5: 上下を削ることが可能。   (BBB - EEEまで)
+ ・-4,  1: FFFが削られます。        (リスト終端)
+ ※rangeの仕様に従います。
+ また、削除対象行は、再検索対象外とします。
+【例】
+ AAA
+ 検索文字列(上)
+ CCC
+ 検索文字列(下)
+ DDD
+ EEE
+ FFF
+ ・1, 1: CCC, DDDを削る。(検索文字列(上)から、1文字目~1文字削除, 検索文字列(下)から、1文字目~1文字削除)
+ ・1, 2: CCC, 検索文字列(下)を削る。(※)
+ (※)
+	検索文字列(上)から2文字削ると、検索文字列(下)は削られることになる為。
+"""
+        )
+        s4.add_argument("target", help="対象ディレクトリ")
+        s4.add_argument("find", help="検索文字列")
+        s4.add_argument("-s", "--scope", nargs=2, required=True, type=int, help="[削除開始行, 削除行数]")
 
         self.args = parser.parse_args()
 
@@ -242,6 +286,26 @@ description =
             dest = os.path.join(d, r) + e
             os.rename(list, dest)
 
+    def deleteline(self):
+        for list in self.lists:
+            buf = []
+            delflg = []
+            with open(list, 'r', encoding="utf-8") as read_file:
+                for line in read_file:
+                    buf.append(line)
+                    delflg.append(False)
+            for i, line in enumerate(buf):
+                if not delflg[i] and self.isfind(self.args.find, line):
+                    for j in range(i + self.args.scope[0], i + self.args.scope[0] + self.args.scope[1]):
+                        delflg[j] = True
+            with open("tempfile", 'w', encoding="utf-8") as write_file:
+                for i, line in enumerate(buf):
+                    if not delflg[i]:
+                        write_file.write(line)
+            if os.path.isfile("tempfile"):
+                os.remove(list)
+                os.rename("tempfile", list)
+
     #対象一覧
     def printlists(self):
         print(self.lists)
@@ -263,8 +327,9 @@ description =
         if self.args.subcommand == "rename" or self.args.subcommand == "ren" \
         or self.args.subcommand == "rn" or self.args.subcommand == "mv":
             self.rename()
-
-
+        if self.args.subcommand == "deleteline" or self.args.subcommand == "del" \
+        or self.args.subcommand == "dl":
+            self.deleteline()
 '''
 処理先頭はこちら
 '''

@@ -3,8 +3,8 @@
 	よくあるフリーソフトや、エディタでのGrep置換とは違うアプローチをしています。
 
 [特長]
-	スクリプトなので、カスタマイズが効く。(何をしているのか見える)
-	置換回数や置換範囲、置換対象行が設定できるため、考え方次第で強力な置換ができる。
+	スクリプトなので、カスタマイズが効きます。(何をしているのか見えているため。)
+	置換回数や置換範囲、置換対象行が設定できるため、考え方次第で強力な置換ができます。
 
 [環境準備]
 	1) pythonをインストールしてください。Python3系です。
@@ -19,83 +19,53 @@
 	   cmd.exeでも、powershellでも、git bashでも動きます。
 	   conemuが便利です。
 		https://conemu.github.io/
-	2) python grep_replace.py サブコマンド ... として処理を実施してください。
+	2) python grep_replace.py ... と処理を実施してください。
 	
 	●引数について
 		■argparseに対応しました。
 
 [あると便利なもの]
+	★Git for Windows
+		https://git-for-windows.github.io/
 	★WinMerge 日本語版
+		http://www.geocities.co.jp/SiliconValley-SanJose/8165/winmerge.html
 		公式より、いろいろ考慮されています。
 	★エディタ
 		生成されたデータが意図通りであるか調査してください。
 
 [詳細動作説明]
+	> python grep_replace.py -h
+		で、共通のオプションの使い方が分かります。
+	> python grep_replace.py XXX の部分が、主要機能の呼び出しです。
+  サブコマンド一覧
+    replace (rep, rp)   置換処理
+    replace_list (repl, rl)
+                        リスト置換処理
+    rename (ren, rn, mv)
+                        リネーム
+    deleteline (del, dl)
+                        行削除
 
-	★deleteLine.py
-		検索文字列を基点に、削除開始行、削除行数で指定した行を削除します。
+	★replace
+		対象ディレクトリ内の検索文字列を置換文字列で置き換えます。
+
+		置換回数を指定したいときは、-c(--counter)に数字を入力してください。
+		0回は、無指定と同じです。対象ファイルの上から順番に、n回置換を行います。
 	例:
-		対象となるファイルが以下の構成だとします。
-		a
-		ab
-		cde
-		keyword
-		z
-		keyword
-		zzz
-		hoge
-		hogehoge
+		22 22 22
+		22 23 24
+		22 23 24 22
+		22 24 22
+		22 25 22
 
-		ここで、検索文字列に"keyword"、開始行=1、削除行=2とした場合、
-		a
-		ab
-		cde
-		keyword
-		zzz
-		hoge
-		hogehoge
-		とします。
-		
-		【NOTE】
-			●削除対象行は、検索対象外になります。
-			  zの下のkeywordは、削除対象行です。
-			  そのため、zzz, hogeは、削除されずに残っています。
 
-	★rename.py
-		ファイルのリネームを行います。
-	例:
-		testdata01_vol0.txt → testdata01_vol1.txt
-		testdata02_vol0.txt → testdata02_vol1.txt
-		testdata03_vol0.txt → testdata03_vol1.txt
-		testdata04_vol0.txt → testdata04_vol1.txt
-		testdata05_vol0.txt → testdata05_vol1.txt
-		testdata06_vol0.txt → testdata06_vol1.txt
-		testdata07_vol0.txt → testdata07_vol1.txt
+		検索文字列ではなく、フィルタ指定文字列との一致によって、置換対象行とする
+		には-f(--filter)を使います。
 
-	★replace.py
-		検索文字列を置換文字列で置き換えます。
-	例:
-		対象となるファイルが以下の構成だとします。
-		aaa.Data[0]
-		ab
-		cde
-		keyword
-		z
-		zz
-		zzz
+		範囲を限定したいときは、-s(--scope)に、開始文字列, 終了文字列を入れてください。
 
-		ここで、検索文字列に"Data[0"、置換文字列に"Data[1"を指定した場合、
-		aaa.Data[1]
-		ab
-		cde
-		keyword
-		z
-		zz
-		zzz
-		とします。
-		
-		【NOTE】
-			●引数は""でくくってください。
+
+
 
 	★replace_each.py
 		対象文字列を見つけた行で、検索文字列を置換文字列で置き換えます。
@@ -151,38 +121,9 @@
 		とします。
 		
 		【NOTE】
-			●マッチ(正規表現で検索にひっかかった状態)した文字列をそのまま置き換えるので、
-			  rep
-			  reprep
-			  repreprep
-			  とはならないです。
-			  しかし、zzz_abc_zz が rep_abc_repとなります。(見つかったもの全体を置換する。)
-			●[とか(が入っていると、正規表現のキーワードとして認識されてしまうので、
-			  エスケープ※してください。
-				※[→\[ (→\(
-			●置換文字列には、正規表現を使えないです。
+			//Pt00→Pt[0]... ゼロサプレスしつつ、配列にする正規表現
+			Pt0*([\d]+) Pt[\1]
 
-	★replace_RegExp_Add.py
-		検索文字列(正規表現)の後ろに、追加文字列をくっつけます。
-	例:
-		対象となるファイルが以下の構成だとします。
-		aaa.Data[0] = ab
-		print ab
-		cde = ab + aaa.Data[0] + "\n"
-		bbb.Data[1] = z
-		print z
-		ccc.Data[2] = z + aaa.Data[3]
-		zzz = ccc.Data[2]
-
-		ここで、検索文字列に"Data\[[^\]*]\]"、追加文字列に".Value"を指定した場合、
-		aaa.Data[0].Value = ab
-		print ab
-		cde = ab + aaa.Data[0].Value + "\n"
-		bbb.Data[1].Value = z
-		print z
-		ccc.Data[2].Value = z + aaa.Data[3].Value
-		zzz = ccc.Data[2].Value
-		とします。
 
 	★Replace_Scope.py
 		先頭文字列 終端文字列 検索文字列 置換文字列を与えて、
@@ -312,6 +253,46 @@
 				■上の例だと、最初のtargetをchange*2で置換した後、2番目のtargetを飛ばします。
 				■この方式でいけば、複数行にわたって同じ設定になっている箇所をまとめて上書きできます。
 
+	★rename.py
+		ファイルのリネームを行います。
+	例:
+		testdata01_vol0.txt → testdata01_vol1.txt
+		testdata02_vol0.txt → testdata02_vol1.txt
+		testdata03_vol0.txt → testdata03_vol1.txt
+		testdata04_vol0.txt → testdata04_vol1.txt
+		testdata05_vol0.txt → testdata05_vol1.txt
+		testdata06_vol0.txt → testdata06_vol1.txt
+		testdata07_vol0.txt → testdata07_vol1.txt
+
+	★deleteline
+		検索文字列を基点に、削除開始行、削除行数で指定した行を削除します。
+	例:
+		対象となるファイルが以下の構成だとします。
+		a
+		ab
+		cde
+		keyword
+		z
+		keyword
+		zzz
+		hoge
+		hogehoge
+
+		ここで、検索文字列に"keyword"、開始行=1、削除行=2とした場合、
+		a
+		ab
+		cde
+		keyword
+		zzz
+		hoge
+		hogehoge
+		とします。
+		
+		【NOTE】
+			●削除対象行は、検索対象外になります。
+			  zの下のkeywordは、削除対象行です。
+			  そのため、zzz, hogeは、削除されずに残っています。
+
 [コマンドラインについて]
-	テキストで、手順を順番に書いて、バッチファイルの出来上がり。
+	テキストで、手順を順番に書いて、バッチファイル化することができます。
 	ファイル名を、*.cmd or *.batとすれば、定型の処理は自動化できます。
