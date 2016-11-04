@@ -1,0 +1,11 @@
+.git
+.svn
+.subversion
+.ssh
+.vim
+.VirtualBox
+.meta
+_bkup
+bin
+obj
+コピー
