@@ -12,7 +12,7 @@ class GrepReplace:
         グループは、ヘルプを見たときに分かれて表示させるための工夫。
         '''
         parent_parser = argparse.ArgumentParser(add_help=False)
-        parent_parser.add_argument("-v", "--version", action="version", version="Grep to Replace 1.0")
+        parent_parser.add_argument("-v", "--version", action="version", version="Grep to Replace 1.0.1")
         parent_parser.add_argument("-b", "--backup", action="store_true", help="バックアップを作る")
         parent_parser.add_argument("-r", "--regexp", action="store_true", help="検索 / 置換に正規表現を使う")
         p2 = parent_parser.add_argument_group("target details")
@@ -53,7 +53,7 @@ epilog =
         subparsers = parser.add_subparsers(metavar="サブコマンド一覧", dest="subcommand")
 
 
-        s1 = subparsers.add_parser("replace", aliases=["rep", "rp"], help="置換処理",
+        s1 = subparsers.add_parser("replace", aliases=["rp"], help="置換処理",
             parents = [parent_parser],
             formatter_class = argparse.RawDescriptionHelpFormatter,
 description =
@@ -65,8 +65,6 @@ description =
 
 検索文字列ではなく、フィルタ指定文字列との一致によって、置換対象行とする
 には-f(--filter)を使います。
-
-範囲を限定したいときは、-s(--scope)に、開始文字列, 終了文字列を入れてください。
 """
         )
         s1.add_argument("target", help="対象ディレクトリ")
@@ -74,10 +72,32 @@ description =
         s1.add_argument("replace", help="置換文字列")
         s1.add_argument("-c", "--counter", type=int, help="置換カウンタ")
         s1.add_argument("-f", "--filters", nargs="+", help="フィルタ[1個以上]")
-        s1.add_argument("-s", "--scope", nargs=2, help="範囲指定[開始, 終了]")
 
 
-        s2 = subparsers.add_parser("replace_list", aliases=["repl", "rl"], help="リスト置換処理",
+        s2 = subparsers.add_parser("replace_scope", aliases=["rs"], help="置換処理(範囲)",
+            parents = [parent_parser],
+            formatter_class = argparse.RawDescriptionHelpFormatter,
+description =
+"""
+対象ディレクトリ内の検索文字列を置換文字列で置き換えます。
+範囲を限定するために、-s(--scope)に、開始文字列, 終了文字列を入れてください。
+
+置換回数を指定したいときは、-c(--counter)に数字を入力してください。
+0回は、無指定と同じです。対象ファイルの上から順番に、n回置換を行います。
+
+検索文字列ではなく、フィルタ指定文字列との一致によって、置換対象行とする
+には-f(--filter)を使います。
+"""
+        )
+        s2.add_argument("target", help="対象ディレクトリ")
+        s2.add_argument("find", help="検索文字列")
+        s2.add_argument("replace", help="置換文字列")
+        s2.add_argument("-s", "--scope", nargs=2, required=True, help="範囲指定[開始, 終了]")
+        s2.add_argument("-c", "--counter", type=int, help="置換カウンタ")
+        s2.add_argument("-f", "--filters", nargs="+", help="フィルタ[1個以上]")
+
+
+        s3 = subparsers.add_parser("replace_list", aliases=["rl"], help="リスト置換処理",
             parents = [parent_parser],
             formatter_class = argparse.RawDescriptionHelpFormatter,
 description =
@@ -88,12 +108,12 @@ description =
 0回は、無指定と同じです。対象ファイルの上から順番に、n回置換を行います。
 """
         )
-        s2.add_argument("target", help="対象ディレクトリ")
-        s2.add_argument("-s", "--scope", nargs=2, required=True, help="範囲指定[開始, 終了]")
-        s2.add_argument("-c", "--counter", type=int, help="置換カウンタ")
+        s3.add_argument("target", help="対象ディレクトリ")
+        s3.add_argument("-s", "--scope", nargs=2, required=True, help="範囲指定[開始, 終了]")
+        s3.add_argument("-c", "--counter", type=int, help="置換カウンタ")
 
 
-        s3 = subparsers.add_parser("rename", aliases=["ren", "rn", "mv"], help="リネーム",
+        s4 = subparsers.add_parser("rename", aliases=["rn"], help="リネーム",
             parents = [parent_parser],
             formatter_class = argparse.RawDescriptionHelpFormatter,
 description =
@@ -101,12 +121,12 @@ description =
 対象ディレクトリ内の検索ファイル名を置換ファイル名でリネームします。
 """
         )
-        s3.add_argument("target", help="対象ディレクトリ")
-        s3.add_argument("find", help="検索ファイル名")
-        s3.add_argument("replace", help="置換ファイル名")
+        s4.add_argument("target", help="対象ディレクトリ")
+        s4.add_argument("find", help="検索ファイル名")
+        s4.add_argument("replace", help="置換ファイル名")
 
 
-        s4 = subparsers.add_parser("deleteline", aliases=["del", "dl"], help="行削除",
+        s5 = subparsers.add_parser("delete_line", aliases=["dl"], help="行削除",
             parents = [parent_parser],
             formatter_class = argparse.RawDescriptionHelpFormatter,
 description =
@@ -145,9 +165,9 @@ epilog =
 	検索文字列(上)から2文字削ると、検索文字列(下)は削られることになる為。
 """
         )
-        s4.add_argument("target", help="対象ディレクトリ")
-        s4.add_argument("find", help="検索文字列")
-        s4.add_argument("-s", "--scope", nargs=2, required=True, type=int, help="[削除開始行, 削除行数]")
+        s5.add_argument("target", help="対象ディレクトリ")
+        s5.add_argument("find", help="検索文字列")
+        s5.add_argument("-s", "--scope", nargs=2, required=True, type=int, help="[削除開始行, 削除行数]")
 
         self.args = parser.parse_args()
 
@@ -232,6 +252,23 @@ epilog =
     def replace(self):
         for list in self.lists:
             self.clear_counter()
+            with open(list, 'r', encoding="utf-8") as read_file:
+                with open("tempfile", 'w', encoding="utf-8") as write_file:
+                    for line in read_file:
+                        dest = line
+                        if self.isfilter(line) and self.iscounter():
+                            if self.args.regexp:
+                                dest = re.sub(self.args.find, self.args.replace, line)
+                            else:
+                                dest = line.replace(self.args.find, self.args.replace)
+                        write_file.write(dest)
+            if os.path.isfile("tempfile"):
+                os.remove(list)
+                os.rename("tempfile", list)
+
+    def replace_scope(self):
+        for list in self.lists:
+            self.clear_counter()
             flg = False
             with open(list, 'r', encoding="utf-8") as read_file:
                 with open("tempfile", 'w', encoding="utf-8") as write_file:
@@ -286,7 +323,7 @@ epilog =
             dest = os.path.join(d, r) + e
             os.rename(list, dest)
 
-    def deleteline(self):
+    def delete_line(self):
         for list in self.lists:
             buf = []
             delflg = []
@@ -318,18 +355,16 @@ epilog =
         #self.printargs()
         self.backup()
         self.setlists()
-        if self.args.subcommand == "replace" or self.args.subcommand == "rep" \
-        or self.args.subcommand == "rp":
+        if self.args.subcommand == "replace" or self.args.subcommand == "rp":
             self.replace()
-        if self.args.subcommand == "replace_list" or self.args.subcommand == "repl" \
-        or self.args.subcommand == "rl":
+        if self.args.subcommand == "replace_scope" or self.args.subcommand == "rs":
+            self.replace_scope()
+        if self.args.subcommand == "replace_list" or self.args.subcommand == "rl":
             self.replace_list()
-        if self.args.subcommand == "rename" or self.args.subcommand == "ren" \
-        or self.args.subcommand == "rn" or self.args.subcommand == "mv":
+        if self.args.subcommand == "rename" or self.args.subcommand == "rn":
             self.rename()
-        if self.args.subcommand == "deleteline" or self.args.subcommand == "del" \
-        or self.args.subcommand == "dl":
-            self.deleteline()
+        if self.args.subcommand == "delete_line" or self.args.subcommand == "dl":
+            self.delete_line()
 '''
 処理先頭はこちら
 '''

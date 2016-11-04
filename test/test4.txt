@@ -1,0 +1,14 @@
+		func hoge() // }まで実行
+		{
+			bbb.Data[1] = 10
+			print bbb.Data[1]
+			bbb.Data[2] = "test"
+			print bbb.Data[2]
+		}
+		func hogehoge()
+		{
+			bbb.Data[1] = 20
+			print bbb.Data[1]
+			bbb.Data[2] = "test"
+			zzz = ccc.Data[2]
+		}
