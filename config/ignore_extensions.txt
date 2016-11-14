@@ -1,11 +1,8 @@
-.bak
 .bash
 .git
 .config
 .csproj
 .sys
-.cmd
-.bat
 .db
 .a
 .o
