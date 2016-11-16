@@ -233,7 +233,7 @@ description =
         else:
             return True
 
-     def isnofilter(self, line):
+    def isnofilter(self, line):
         if self.args.no_filters:
             for filter in self.args.no_filters:
                 if self.isfind(filter, line):
@@ -243,7 +243,7 @@ description =
         else:
             return True
 
-   def isfilter(self, line):
+    def isfilter(self, line):
         if self.args.filters:
             for filter in self.args.filters:
                 if self.isfind(filter, line):
