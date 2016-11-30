@@ -197,12 +197,12 @@
         //ファイル名:re.search(), フォルダ名, 拡張子:re.match()、大文字小文字を区別しない
         python grep_replace.py df test -ed back -ef test -ee .log
 
-    ★python grep_replace.py nl
+    ★python grep_replace.py al
         対象ファイルに、追加リストの中身を追記します。
         先頭に追記するときは、-t(--top)を追加してください。
         (何も指定しない場合は、末尾に追記します。)
      例:
-        python grep_replace.py nl test
+        python grep_replace.py al test
 
 [コマンドラインについて]
     テキストで、手順を順番に書いて、バッチファイル化することができます。
